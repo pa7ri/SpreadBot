@@ -1,14 +1,12 @@
 <?php
-
 namespace App\Conversations;
-
+use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Inspiring;
 use BotMan\BotMan\Messages\Incoming\Answer;
 use BotMan\BotMan\Messages\Outgoing\Question;
 use BotMan\BotMan\Messages\Outgoing\Message;
 use BotMan\BotMan\Messages\Outgoing\Actions\Button;
 use BotMan\BotMan\Messages\Conversations\Conversation;
-
 class HelloConversation extends Conversation
 {
   protected $location = 'Madrid';
@@ -17,11 +15,9 @@ class HelloConversation extends Conversation
   protected $month;
   protected $year;
   protected $time = '19:30';
-
   protected $title = 'titulo';
   protected $description= 'descr';
   protected $tag = 0;
-
     public function initConversation()
     {
       $question = Question::create('Hola, ¿qué quieres hacer?')
@@ -32,6 +28,7 @@ class HelloConversation extends Conversation
                       Button::create('Consultar eventos')->value('show'),
                       Button::create('Cancelar')->value('cancel'),
                     ]);
+      Log::info('Pregunto opciones : ');
       return $this->ask($question, function (Answer $answer) {
           if ($answer->isInteractiveMessageReply()) {
               if ($answer->getValue() === 'create') {
@@ -43,18 +40,16 @@ class HelloConversation extends Conversation
               }
           }
       });
-    }
 
+    }
     public function askDate()
       {
-
         $keyboard = [
             ['7', '8', '9'],
             ['4', '5', '6'],
             ['1', '2', '3'],
             ['0']
         ];
-
         $question = Question::create('Primero elige una fecha para tu evento : ')
                 ->fallback('Vaya, se ha producido un error, vuelve a intentarlo')
                 ->callbackId('ask_date')
@@ -65,6 +60,8 @@ class HelloConversation extends Conversation
                   Button::create('Abril')->value('Abril'),
                   Button::create('Mayo')->value('Mayo')
                 ]);
+
+            Log::info('Pregunto calendario');
 
             $this->ask($question, function (Answer $answer) {
                 if ($answer->isInteractiveMessageReply()) {
@@ -83,42 +80,38 @@ class HelloConversation extends Conversation
                 ])
             ]);
       }
-
     public function askTitle()
         {
             $this->ask('Vamos a darle forma al evento, empieza por ponerle un título :', function(Answer $answer) {
                 $this->title = $answer->getText();
-
                 $this->askDescription();
             });
+            Log::info('Pregunto título');
         }
-
     public function askDescription()
         {
             $this->ask('Ahora describe en qué consiste el evento : ', function(Answer $answer) {
                 $this->description = $answer->getText();
                 $this->askLocation();
             });
+            Log::info('Pregunto descripción');
         }
-
-
-
     public function askLocation()
         {
             $this->ask('¿Dónde va a ocurrir el evento? : ', function(Answer $answer) {
                 $this->location = $answer->getText();
                 $this->askTime();
             });
+            Log::info('Pregunto lugar');
         }
-
     public function askTime()
         {
             $this->ask('Finalmente, añade una hora : ', function(Answer $answer) {
                 $this->time = $answer->getText();
                 $this->showEventResult();
             });
+            Log::info('Pregunto hora');
         }
-
     public function showEventResult()
         {
           $question = Question::create('Perfecto, así quedaría tu evento : '.'<br>'.
@@ -136,7 +129,6 @@ class HelloConversation extends Conversation
                       Button::create('Cancelar')->value('cancel'),
                       Button::create('Publicar')->value('register')
                 ]);
-
               $this->ask($question, function (Answer $answer) {
                   if ($answer->isInteractiveMessageReply()) {
                     if ($answer->getValue() === 'register') {
@@ -147,26 +139,25 @@ class HelloConversation extends Conversation
                     }
                   }
               }, [ 'parse_mode' => 'HTML']);
+
+              Log::info('Pregunto publicar');
         }
 
-    /*private function buildCalendar(){
+  /*
+  private function buildCalendar(){
       $calendar = array();
       $year = date('Y', time());
       $month = date('m', time());
       $monthName = date('F', mktime(0, 0, 0, $month, 10));
-
       $daysInMonth = date('t',strtotime($year.'-'.$month.'-01'));
       $weeksInMonth = ($daysInMonths%7==0?0:1) + intval($daysInMonths/7);
-
       $monthEndingDay= date('N',strtotime($year.'-'.$month.'-'.$daysInMonths));
       $monthStartDay = date('N',strtotime($year.'-'.$month.'-01'));
       if($monthEndingDay<$monthStartDay){
           $weeksInMonth++;
       }
-
       array_push($calendar, $monthName.' '.$year);
       array_push($calendar, array('L.','M.','Mi.','J.','V.','S.','D.'));
-
       $week = array();
       for ($i=0; $i < $weeksInMonth; $i++) {
         for ($j=0; $j < 7; $j++) {
@@ -182,11 +173,9 @@ class HelloConversation extends Conversation
         $week = array();
       }
       array_push($calendar, array('<<',' ','>>');
-
       return $calendar;
     }*/
-
-    /**
+    /*
      * Start the conversation
      */
     public function run()
