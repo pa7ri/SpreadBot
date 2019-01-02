@@ -6,6 +6,7 @@ use BotMan\BotMan\BotMan;
 use Illuminate\Http\Request;
 use App\Conversations\ExampleConversation;
 use App\Conversations\HelloConversation;
+use Illuminate\Support\Facades\Log;
 
 class BotManController extends Controller
 {
@@ -17,6 +18,7 @@ class BotManController extends Controller
         $botman = app('botman');
 
         $botman->listen();
+        Log::error('EL BOT ESTA ESCUCHANDO');
     }
 
     /**
@@ -33,13 +35,20 @@ class BotManController extends Controller
      */
     public function startConversation(BotMan $bot)
     {
+
+        Log::error('ESCUCHO hi');
         $bot->startConversation(new ExampleConversation());
     }
+
+
     /**
      * Loaded through routes/botman.php
      * @param  BotMan $bot
-     */ public function helloConversation(BotMan $bot)
-      {
+     */
+    public function helloConversation(BotMan $bot)
+    {
+
+        Log::error('ESCUCHO CORRECTAMEMTE');
         $bot->startConversation(new HelloConversation());
-      }
+    }
 }

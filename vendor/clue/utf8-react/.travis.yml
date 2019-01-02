@@ -1,0 +1,24 @@
+language: php
+
+php:
+  - 5.3
+  - 5.4
+  - 5.5
+  - 5.6
+  - 7
+
+# also test against HHVM, but require "trusty" and ignore errors
+matrix:
+  include:
+    - php: hhvm
+      dist: trusty
+  allow_failures:
+    - php: hhvm
+
+sudo: false
+
+install:
+  - composer install --no-interaction
+
+script:
+  - vendor/bin/phpunit --coverage-text

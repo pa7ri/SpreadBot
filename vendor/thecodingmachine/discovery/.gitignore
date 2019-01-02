@@ -1,0 +1,14 @@
+/vendor/
+/composer.lock
+tests/.discovery
+tests/vendor
+tests/composer-test.lock
+.php_cs.cache
+humbuglog.txt
+humbuglog.json
+template/
+.couscous/
+/tests/fixtures/copy/
+/npm-debug.log
+/template
+/build
