@@ -18,7 +18,6 @@ class BotManController extends Controller
         $botman = app('botman');
 
         $botman->listen();
-        Log::error('EL BOT ESTA ESCUCHANDO');
     }
 
     /**
@@ -35,8 +34,6 @@ class BotManController extends Controller
      */
     public function startConversation(BotMan $bot)
     {
-
-        Log::error('ESCUCHO hi');
         $bot->startConversation(new ExampleConversation());
     }
 
@@ -47,8 +44,6 @@ class BotManController extends Controller
      */
     public function helloConversation(BotMan $bot)
     {
-
-        Log::error('ESCUCHO CORRECTAMEMTE');
         $bot->startConversation(new HelloConversation());
     }
 }

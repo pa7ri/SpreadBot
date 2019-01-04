@@ -13,17 +13,13 @@ use Illuminate\Support\Facades\Log;
 $botman = resolve('botman');
 
 
-  Log::error('ESTOY ESCUCHANDO');
 
-$botman->hears('hello|/hi', function ($bot) {
-  Log::error('ESCUCHO HOLIIII');
-    $bot->reply('Hola! 👋');
+$botman->hears('/hola|hola|/Hola|Hola', BotManController::class.'@helloConversation');
+
+$botman->hears('ayuda|/ayuda|Ayuda|/Ayuda', function ($bot) {
+  $bot->reply("Este bot informa de eventos de caracter feminista. Para empezar la interacción, saludale '/hola'");
 });
 
-$botman->hears('/hola', BotManController::class.'@helloConversation');
-
-//$botman->hears('hola', BotManController::class.'@helloConversation');
-
 $botman->fallback(function ($bot) {
-      $bot->reply("Perdona, no sé a qué te refieres, consulta los comandos escribiendo 'ayuda'");
-  });
+   $bot->reply("Perdona, no sé a qué te refieres, consulta los comandos escribiendo '/ayuda'");
+});
