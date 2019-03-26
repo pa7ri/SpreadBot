@@ -15,8 +15,10 @@ class HelloConversation extends Conversation
 {
   protected $place;
   protected $date;
+  protected $date_millis;
   protected $day;
   protected $month;
+  protected $month_format;
   protected $year;
   protected $time;
 
@@ -24,8 +26,14 @@ class HelloConversation extends Conversation
   protected $description;
   protected $show = 0;
 
+  protected $current_time;
+  protected $one_week_time = 604800; //1 week in seconds
+
+  protected $chatId;
+
     public function initConversation()
     {
+      $this->current_time = strtotime("now");
       $question = Question::create('Hola, ¿qué quieres hacer?')
                   ->fallback('Vaya, se ha producido un error, vuelve a intentarlo')
                   ->callbackId('init_conver')
@@ -40,6 +48,8 @@ class HelloConversation extends Conversation
                   $this->askDate();
               } else if ($answer->getValue() === 'show') {
                   $this->getEventsFromDB();
+              } else if ($answer->getValue() === 'chatId') {
+                  $this->getChatId();
               } else {
                 $this->say('Hasta pronto 😄');
               }
@@ -55,7 +65,8 @@ class HelloConversation extends Conversation
                 ->addButtons([
                   Button::create('2019')->value('2019'),
                   Button::create('2020')->value('2020'),
-                  Button::create('2021')->value('2021')
+                  Button::create('2021')->value('2021'),
+                  Button::create('2022')->value('2022')
                  ]);
 
             $this->ask($question, function (Answer $answer) {
@@ -81,7 +92,8 @@ class HelloConversation extends Conversation
                       function (Answer $answer) {
                         $this->month = $answer->getText();
                         $this->say($this->month);
-                          $this->askDay();
+                        $this->getMonthFormat($answer);
+                        $this->askDay();
                       }, ['reply_markup' => json_encode([
                           'keyboard' => $keyboard,
                           'one_time_keyboard' => true,
@@ -91,7 +103,6 @@ class HelloConversation extends Conversation
         }
         public function askDay()
           {
-
               $keyboard = [
                           ['1', '2', '3', '4', '5', '6', '7'],
                           ['8', '9', '10', '11', '12', '13', '14'],
@@ -104,8 +115,14 @@ class HelloConversation extends Conversation
                     function (Answer $answer) {
                       $this->day = $answer->getText();
                       $this->say($this->day);
-                      $this->date = $this->day.'/'.$this->month.'/'.$this->year;
-                      $this->askTitle();
+                      $this->date = $this->day.' '.$this->month_format.' '.$this->year; //$this->day.' '.$this->month_format.' '.$this->year;
+                      $this->date_millis = strtotime($this->date);
+                      $this->date = $this->day.' de '.$this->month.' de '.$this->year;
+                      if( $this->date_millis < $this->current_time) {
+                        $this->say('Parece que la fecha introducida : '.$this->date.' no es válida, inténtelo de nuevo');
+                      } else {
+                        $this->askTitle();
+                      }
                     }, ['reply_markup' => json_encode([
                         'keyboard' => $keyboard,
                         'one_time_keyboard' => true,
@@ -178,29 +195,81 @@ class HelloConversation extends Conversation
               }, [ 'parse_mode' => 'HTML']);
         }
 
-    public function addEventToDB()
-    {
+    public function addEventToDB() {
       DB::table('events')->insert([
             'title' => $this->title,
             'description' => $this->description,
             'place' => $this->place,
-            'date' => $this->date,
+            'date' => $this->date_millis,
             'time' => $this->time,
         ]);
     }
 
-    public function getEventsFromDB(){
-      $events = DB::table('events')->paginate(7);
-      foreach ($events as $ev ){
-        $message="<b> $ev->title </b> \n".
-        "----------------------------------------------------- \n".
-        "<b> Descripción </b>  : ".$ev->description."\n".
-        "<b> Lugar </b>             : ".$ev->place."\n".
-        "<b> Fecha </b>            : ".$ev->date."\n".
-        "<b> Hora </b>              : ".$ev->time."\n".
-        "----------------------------------------------------- \n";
-        $this->say($message, [ 'parse_mode' => 'HTML']);
+    public function getEventsFromDB() {
+      $this->deletePastEventsFromDB();
+      $events = DB::table('events')
+            ->whereBetween('date', [$this->current_time, $this->current_time + $this->one_week_time])
+            ->orderBy('date','asc')
+            ->get();
+      if($events->count() == 0) {
+        $this->say("No hay eventos para esta semana 😣");
+      } else {
+        foreach ($events as $ev ){
+          $message="<b> $ev->title </b> \n".
+          "----------------------------------------------------- \n".
+          "<b> Descripción </b>  : ".$ev->description."\n".
+          "<b> Lugar </b>             : ".$ev->place."\n".
+          "<b> Fecha </b>             : ".date('d-m-Y', $ev->date)."\n".
+          "<b> Hora </b>               : ".$ev->time."\n".
+          "----------------------------------------------------- \n";
+          $this->say($message, [ 'parse_mode' => 'HTML']);
+        }
       }
+    }
+
+    public function deletePastEventsFromDB() {
+      DB::table('events')->where('date', '<', $this->current_time)->delete();
+    }
+
+    public function getMonthFormat(Answer $answer) {
+        switch ($answer->getText()) {
+            case "Enero":
+                 $this->month_format = "January";
+                break;
+            case "Febrero":
+                $this->month_format = "February";
+                break;
+            case "Marzo":
+                $this->month_format = "March";
+                break;
+            case "Abril":
+                $this->month_format = "April";
+                break;
+            case "Mayo":
+                $this->month_format = "May";
+                break;
+            case "Junio":
+                $this->month_format = "June";
+                break;
+            case "Julio":
+                $this->month_format = "July";
+                break;
+            case "Agosto":
+                $this->month_format = "August";
+                break;
+            case "Septiembre":
+                $this->month_format = "September";
+                break;
+            case "Octubre":
+                $this->month_format = "October";
+                break;
+            case "Noviembre":
+                $this->month_format = "November";
+                break;
+            case "Diciembre":
+                $this->month_format = "December";
+                break;
+        }
     }
 
     /**
