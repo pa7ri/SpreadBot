@@ -33,28 +33,26 @@ class HelloConversation extends Conversation
 
     public function initConversation()
     {
-      $this->current_time = strtotime("now");
-      $question = Question::create('Hola, ¿qué quieres hacer?')
-                  ->fallback('Vaya, se ha producido un error, vuelve a intentarlo')
-                  ->callbackId('init_conver')
-                  ->addButtons([
-                      Button::create('Crear nuevo evento')->value('create'),
-                      Button::create('Consultar eventos')->value('show'),
-                      Button::create('Cancelar')->value('cancel'),
-                    ]);
-      return $this->ask($question, function (Answer $answer) {
-          if ($answer->isInteractiveMessageReply()) {
-              if ($answer->getValue() === 'create') {
-                  $this->askDate();
-              } else if ($answer->getValue() === 'show') {
-                  $this->getEventsFromDB();
-              } else if ($answer->getValue() === 'chatId') {
-                  $this->getChatId();
-              } else {
-                $this->say('Hasta pronto 😄');
-              }
-          }
-      });
+        $this->current_time = strtotime("now");
+        $question = Question::create('Hola, ¿qué quieres hacer?')
+            ->fallback('Vaya, se ha producido un error, vuelve a intentarlo')
+            ->callbackId('init_conver')
+            ->addButtons([
+                Button::create('Crear nuevo evento')->value('create'),
+                Button::create('Consultar eventos')->value('show'),
+                Button::create('Cancelar')->value('cancel'),
+            ]);
+        return $this->ask($question, function (Answer $answer) {
+            if ($answer->isInteractiveMessageReply()) {
+                if ($answer->getValue() === 'create') {
+                    $this->askDate();
+                } else if ($answer->getValue() === 'show') {
+                    $this->getEventsFromDB();
+                } else {
+                    $this->say('Hasta pronto 😄');
+                }
+            }
+        });
     }
 
     public function askDate()
